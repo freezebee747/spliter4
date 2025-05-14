@@ -1,0 +1,19 @@
+#pragma once
+#include <set>
+#include <unordered_map>
+#include "rule.h"
+
+class MakefileText {
+private:
+    std::vector<std::unique_ptr<Rule>> rules;
+    std::unordered_map<std::string, std::string> variables;
+    std::unordered_map<std::string, std::string> phony_targets;
+//    std::unordered_map<std::string, std::string> special_targets;
+    std::vector<std::string> include_files;
+
+public:
+    void AddRule(std::unique_ptr<RuleArg> ra);
+    void AddVariable(std::string key, std::string value);
+    void AddPhonyTarget(std::string key, std::string value);
+    void print();
+};

@@ -1,0 +1,21 @@
+FORCE:
+objects = main.o kbd.o command.o display.o \
+	test.o whats.o
+
+all: main.o util.o
+	$(CC) -o all main.o util.o
+
+$(objects): %.o: %.c # this is test text
+	$(CC) -c $(CFLAGS) $< -o $@
+
+main.o: main.c defs.h
+	$(CC) -c main.c
+
+util.o: util.c defs.h
+	$(CC) -c util.c
+	$(CC) -c defs.h
+
+kor.o: util.c defs.h ; $(CC) -c util.c
+
+clean:
+	rm -f *.o all
