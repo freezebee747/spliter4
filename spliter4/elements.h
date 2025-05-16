@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
-
+#include <vector>
 #if defined(_WIN32)
 const std::string DEFAULT_SEARCH_DIR = "C:\\Program Files";
 #elif defined(__APPLE__) && defined(__MACH__)
@@ -40,6 +40,7 @@ private:
 
 public:
 	Target(const std::string& t) :target(t) {};
+	std::string GetTarget() { return target; }
 	void print() {
 		std::cout << target << std::endl;
 	}
@@ -48,21 +49,34 @@ public:
 class Prerequisite {
 private:
 	std::string preqs;
+	std::string expended;
 public:
 	Prerequisite(const std::string& p) : preqs(p) {};
 	void print() {
 		std::cout << preqs << std::endl;
 	}
+	std::string GetPreqs();
+	bool IsVariable();
+	std::string GetVariable();
+	void SetExpended(const std::string& exp);
+
+
 };
 
 class Recipe {
 private:
 	std::string recipe;
+	std::string expended;
 public:
 	Recipe(const std::string& r) : recipe(r) {}
 	void print() {
 		std::cout << recipe << std::endl;
 	}
+	void SetExpended(const std::string& exp);
+	void SetExpended(std::vector<std::string>& exp);
+
+	std::vector<std::string> SplitRecipe();
+
 };
 
 //static pattern rule을 위한 클래스

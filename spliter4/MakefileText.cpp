@@ -10,7 +10,11 @@ void MakefileText::AddRule(std::unique_ptr<RuleArg> ra) {
         break;
     }
 }
-
+void MakefileText::Expend() {
+    for (const auto& i : rules) {
+        i->variable_expend(variables);
+    }
+}
 void MakefileText::AddVariable(std::string key, std::string value) {
     variables.emplace(key, value);
 }

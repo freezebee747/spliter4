@@ -1,6 +1,5 @@
 #pragma once
 #include <set>
-#include <unordered_map>
 #include "rule.h"
 
 class MakefileText {
@@ -15,5 +14,6 @@ public:
     void AddRule(std::unique_ptr<RuleArg> ra);
     void AddVariable(std::string key, std::string value);
     void AddPhonyTarget(std::string key, std::string value);
+    void Expend();
     void print();
 };

@@ -130,6 +130,8 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MakefileText.cpp" />
+    <ClCompile Include="prerequisite.cpp" />
+    <ClCompile Include="recipe.cpp" />
     <ClCompile Include="rule.cpp" />
   </ItemGroup>
   <ItemGroup>
