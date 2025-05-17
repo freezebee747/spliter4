@@ -30,6 +30,18 @@
     <ClCompile Include="recipe.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="strcontrol.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="parser.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="explicit_rule.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="static_pattern_rule.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rule.h">
@@ -45,6 +57,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="strcontrol.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="explicit_rule.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="static_pattern_rule.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

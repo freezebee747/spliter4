@@ -1,6 +1,9 @@
 #pragma once
 #include <set>
+
 #include "rule.h"
+#include "explicit_rule.h"
+#include "static_pattern_rule.h"
 
 class MakefileText {
 private:
