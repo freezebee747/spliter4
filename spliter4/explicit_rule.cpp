@@ -7,7 +7,17 @@ Explicit_rule::Explicit_rule(RuleArg& ra) {
 }
 
 void Explicit_rule::variable_expend(std::unordered_map<std::string, std::string>& variable) {
+	TargetExpend(variable);
 	PrereqExpend(variable);
+	RecipeExpended(variable);
+}
+//* 와일드카드의 확장은 사용자가 와일드카드에 어떤 파일이 존재하는지를 확인하기 위한 확장이지
+//  구문 분석을 위한 확장은 아님에 주의하라.
+void Explicit_rule::wildcard_expend(FileManagement& fm){
+	for (const auto& i : targets) {
+		std::vector<std::string> wf = fm.glob(i->GetTarget());
+		i->SetWildcard(wf);
+	}
 }
 
 void Explicit_rule::AddTargets(const std::vector<std::string>& target) {
@@ -25,6 +35,20 @@ void Explicit_rule::AddRecipe(const std::vector<std::string>& recipe) {
 		recipes.push_back(std::make_unique<Recipe>(i));
 	}
 }
+
+void Explicit_rule::TargetExpend(std::unordered_map<std::string, std::string>& variables){
+	for (const auto& target : targets) {
+		if (target->IsVariable()) {
+			std::string temp = target->GetVariable();
+			auto i = variables.find(temp);
+			if (i != variables.end()) {
+				target->SetExpended(i->second);
+			}
+		}
+	}
+}
+
+
 void Explicit_rule::PrereqExpend(std::unordered_map<std::string, std::string>& variables) {
 	for (const auto& preq : preqs) {
 		if (preq->IsVariable()) {
@@ -88,6 +112,7 @@ void Explicit_rule::print() {
 	for (const auto& i : recipes) {
 		i->print();
 	}
+
 	std::cout << "\n";
 }
 

@@ -12,6 +12,10 @@ void Static_pattern_Rule::variable_expend(std::unordered_map<std::string, std::s
 	return;
 }
 
+void Static_pattern_Rule::wildcard_expend(FileManagement& fm){
+	//나중에 정의
+}
+
 void Static_pattern_Rule::AddTarget(const std::vector<std::string>& target) {
 	for (const auto& i : target) {
 		targets.push_back(std::make_unique<Target>(i));

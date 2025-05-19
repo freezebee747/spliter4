@@ -129,6 +129,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="explicit_rule.cpp" />
+    <ClCompile Include="file.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MakefileText.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -137,15 +138,21 @@
     <ClCompile Include="rule.cpp" />
     <ClCompile Include="static_pattern_rule.cpp" />
     <ClCompile Include="strcontrol.cpp" />
+    <ClCompile Include="target.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="elements.h" />
     <ClInclude Include="explicit_rule.h" />
+    <ClInclude Include="file.h" />
     <ClInclude Include="MakefileText.h" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="pattern.h" />
+    <ClInclude Include="prerequisite.h" />
+    <ClInclude Include="recipe.h" />
     <ClInclude Include="rule.h" />
     <ClInclude Include="static_pattern_rule.h" />
     <ClInclude Include="strcontrol.h" />
+    <ClInclude Include="target.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />

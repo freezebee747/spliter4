@@ -1,6 +1,7 @@
 #pragma once
 #include <set>
 
+#include "file.h"
 #include "rule.h"
 #include "explicit_rule.h"
 #include "static_pattern_rule.h"
@@ -12,6 +13,7 @@ private:
     std::unordered_map<std::string, std::string> phony_targets;
 //    std::unordered_map<std::string, std::string> special_targets;
     std::vector<std::string> include_files;
+    FileManagement fm;
 
 public:
     void AddRule(std::unique_ptr<RuleArg> ra);
