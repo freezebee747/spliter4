@@ -8,3 +8,11 @@
 #include "recipe.h"
 #include "pattern.h"
 #include "file.h"
+
+inline const std::unordered_set<std::string> functions = {
+	"let", "foreach", "file", "call", "value", "eval",
+	"origin", "flaver", "shell", "guile", "patsubst"
+};
+
+bool IsVariable_func(const std::string& str);
+bool IsFunction_func(const std::string& str);

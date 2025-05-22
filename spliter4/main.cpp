@@ -1,10 +1,9 @@
 #include "parser.h"
-
+#include "function.h"
 int main(){
-	std::vector<std::pair<unsigned, std::string>> test = ReadFileWithLineNumbers("test.txt");
+	std::vector<std::pair<unsigned, std::string>> test = ReadFileWithLineNumbers("test2.txt");
 	MakefileText mk = ParseMakefileTextFromLines(test);
 
-	mk.Expend();
-	mk.print();
-
+	//mk.Expend();
+	//mk.print();
 }

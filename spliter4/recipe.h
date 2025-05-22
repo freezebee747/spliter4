@@ -12,7 +12,7 @@ public:
 	void print();
 	void SetExpended(const std::string& exp);
 	void SetExpended(std::vector<std::string>& exp);
-
+	bool IsFunction();
 	std::vector<std::string> SplitRecipe();
 
 };

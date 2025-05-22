@@ -67,3 +67,33 @@ std::vector<std::string> SplitSpace(const std::string& target) {
 	}
 	return tokens;
 }
+std::vector<std::string> SplitComma(const std::string& target) {
+	std::stringstream ss(target);
+	std::vector<std::string> tokens;
+	std::string item;
+
+	while (std::getline(ss, item, ',')) {
+		tokens.push_back(item);
+	}
+
+	return tokens;
+}
+bool hasWhitespace(const std::string& str) {
+	for (char ch : str) {
+		if (std::isspace(static_cast<unsigned char>(ch))) {
+			return true;
+		}
+	}
+	return false;
+}
+
+std::string join(const std::vector<std::string>& vec, const std::string& delimiter) {
+	std::string result;
+	for (size_t i = 0; i < vec.size(); ++i) {
+		result += vec[i];
+		if (i != vec.size() - 1) {
+			result += delimiter;
+		}
+	}
+	return result;
+}

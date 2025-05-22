@@ -89,3 +89,14 @@ std::unordered_set<std::string> FileManagement::SearchFilenames(const std::strin
 	}
 
 }
+
+bool FileManagement::IsExistFile(std::string filename){
+	if (filenames.empty()) {
+		SaveFilename();
+	}
+	if (filenames.find(filename) != filenames.end()) {
+		return true;
+	}
+
+	return false;
+}

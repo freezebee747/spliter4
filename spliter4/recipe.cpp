@@ -11,6 +11,10 @@ void Recipe::SetExpended(std::vector<std::string>& exp) {
 	}
 }
 
+bool Recipe::IsFunction(){
+	return IsFunction_func(recipe);
+}
+
 void Recipe::SetExpended(const std::string& exp) {
 	expended = exp;
 }

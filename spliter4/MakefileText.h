@@ -1,5 +1,6 @@
 #pragma once
 #include <set>
+#include <unordered_set>
 
 #include "file.h"
 #include "rule.h"
@@ -14,7 +15,7 @@ private:
 //    std::unordered_map<std::string, std::string> special_targets;
     std::vector<std::string> include_files;
     FileManagement fm;
-
+ 
 public:
     void AddRule(std::unique_ptr<RuleArg> ra);
     void AddVariable(std::string key, std::string value);

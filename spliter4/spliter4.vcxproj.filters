@@ -48,6 +48,12 @@
     <ClCompile Include="target.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="elements.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="function.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rule.h">
@@ -86,8 +92,12 @@
     <ClInclude Include="file.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="function.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
+    <Text Include="test2.txt" />
   </ItemGroup>
 </Project>

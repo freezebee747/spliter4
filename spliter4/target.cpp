@@ -9,10 +9,11 @@ std::string Target::GetTarget() {
 }
 
 bool Target::IsVariable() {
-	if (target[0] == '$' && target[1] == '(' && target.back() == ')') {
-		return true;
-	}
-	return false;
+	return IsVariable_func(target);
+}
+
+bool Target::IsFunction(){
+	return IsFunction_func(target);
 }
 
 void Target::SetWildcard(std::vector<std::string>& wildcard){

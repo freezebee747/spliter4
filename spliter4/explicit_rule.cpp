@@ -7,9 +7,9 @@ Explicit_rule::Explicit_rule(RuleArg& ra) {
 }
 
 void Explicit_rule::variable_expend(std::unordered_map<std::string, std::string>& variable) {
-	TargetExpend(variable);
-	PrereqExpend(variable);
-	RecipeExpended(variable);
+	TargetVariableExpend(variable);
+	PrereqVariableExpend(variable);
+	RecipeVariableExpended(variable);
 }
 //* 와일드카드의 확장은 사용자가 와일드카드에 어떤 파일이 존재하는지를 확인하기 위한 확장이지
 //  구문 분석을 위한 확장은 아님에 주의하라.
@@ -18,6 +18,10 @@ void Explicit_rule::wildcard_expend(FileManagement& fm){
 		std::vector<std::string> wf = fm.glob(i->GetTarget());
 		i->SetWildcard(wf);
 	}
+}
+
+void Explicit_rule::function_expend(){
+
 }
 
 void Explicit_rule::AddTargets(const std::vector<std::string>& target) {
@@ -36,7 +40,7 @@ void Explicit_rule::AddRecipe(const std::vector<std::string>& recipe) {
 	}
 }
 
-void Explicit_rule::TargetExpend(std::unordered_map<std::string, std::string>& variables){
+void Explicit_rule::TargetVariableExpend(std::unordered_map<std::string, std::string>& variables){
 	for (const auto& target : targets) {
 		if (target->IsVariable()) {
 			std::string temp = target->GetVariable();
@@ -49,7 +53,7 @@ void Explicit_rule::TargetExpend(std::unordered_map<std::string, std::string>& v
 }
 
 
-void Explicit_rule::PrereqExpend(std::unordered_map<std::string, std::string>& variables) {
+void Explicit_rule::PrereqVariableExpend(std::unordered_map<std::string, std::string>& variables) {
 	for (const auto& preq : preqs) {
 		if (preq->IsVariable()) {
 			std::string temp = preq->GetVariable();
@@ -62,7 +66,7 @@ void Explicit_rule::PrereqExpend(std::unordered_map<std::string, std::string>& v
 }
 
 
-void Explicit_rule::RecipeExpended(std::unordered_map<std::string, std::string>& variables) {
+void Explicit_rule::RecipeVariableExpended(std::unordered_map<std::string, std::string>& variables) {
 
 	for (auto& recipe : recipes) {
 		std::vector<std::string> extend = recipe->SplitRecipe();

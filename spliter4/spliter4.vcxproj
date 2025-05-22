@@ -128,8 +128,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="elements.cpp" />
     <ClCompile Include="explicit_rule.cpp" />
     <ClCompile Include="file.cpp" />
+    <ClCompile Include="function.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MakefileText.cpp" />
     <ClCompile Include="parser.cpp" />
@@ -144,6 +146,7 @@
     <ClInclude Include="elements.h" />
     <ClInclude Include="explicit_rule.h" />
     <ClInclude Include="file.h" />
+    <ClInclude Include="function.h" />
     <ClInclude Include="MakefileText.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="pattern.h" />
@@ -156,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="test.txt" />
+    <Text Include="test2.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

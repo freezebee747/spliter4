@@ -56,4 +56,5 @@ public:
 	void SaveFilename();
 	std::unordered_set<std::string> SearchFilenames();
 	std::unordered_set<std::string> SearchFilenames(const std::string& directory);
+	bool IsExistFile(std::string filename);
 };

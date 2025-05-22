@@ -5,10 +5,11 @@ std::string Prerequisite::GetPreqs() {
 }
 
 bool Prerequisite::IsVariable() {
-	if (preqs[0] == '$' && preqs[1] == '(' && preqs.back() == ')') {
-		return true;
-	}
-	return false;
+	return IsVariable_func(preqs);
+}
+
+bool Prerequisite::IsFunction(){
+	return IsFunction_func(preqs);
 }
 
 std::string Prerequisite::GetVariable() {

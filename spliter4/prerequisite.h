@@ -10,6 +10,7 @@ public:
 	void print();
 	std::string GetPreqs();
 	bool IsVariable();
+	bool IsFunction();
 	std::string GetVariable();
 	void SetExpended(const std::string& exp);
 

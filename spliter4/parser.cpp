@@ -1,5 +1,6 @@
 #include "parser.h"
 
+
 std::vector<std::pair<unsigned, std::string>> ReadFileWithLineNumbers(const std::string& filename) {
 	std::ifstream in(filename);
 	std::vector<std::pair<unsigned, std::string>> lines;
@@ -23,6 +24,7 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 	MakefileText makefileText;
 	std::unique_ptr<RuleArg> RA;
 	std::string phony_str;
+	std::unordered_map<std::string, std::string> IE;//즉시 평가를 위한 변수
 	bool IsLong = false;
 	bool IsPhony = false;
 
@@ -56,7 +58,32 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 			IsPhony = false;
 			RA.reset();
 		}
-		};
+	};
+	auto Immediate_Evaluation = [](std::unordered_map<std::string, std::string>& ie, std::vector<std::string>& targets) {
+			for (auto& i : targets) {
+				if (i.size() >= 4 && i[0] == '$' && i[1] == '(' && i.back() == ')') {
+					std::string temp = i.substr(2, i.size() - 3); 
+					auto it = ie.find(temp);
+					if (it != ie.end()) {
+						i = it->second; 
+					}
+				}
+			}
+	};
+	auto Immediate_Evaluation_And_Join = [](std::unordered_map<std::string, std::string>& ie, std::string& s) {
+		std::vector<std::string> tokens = SplitSpace(s);
+		for (auto& token : tokens) {
+			if (token.size() >= 4 && token[0] == '$' && token[1] == '(' && token.back() == ')') {
+				std::string var = token.substr(2, token.size() - 3);
+				auto it = ie.find(var);
+				if (it != ie.end()) {
+					token = it->second;
+				}
+			}
+		}
+		s = join(tokens, " ");
+	};
+
 
 	for (const auto& [line, str] : combinedLines) {
 		if (str.empty()) continue;
@@ -65,6 +92,17 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 		if (str[0] != '\t' && RA) {
 			makefileText.AddRule(std::move(RA));
 			RA.reset(); // 안전하게 해제
+		}
+
+		if (str.find(":=") != std::string::npos) {
+			int Sep = str.find('=');
+			std::string key = trim(safe_substr(str, 0, Sep - 1));
+			std::string value = trim(safe_substr(str, Sep + 1, str.size()));
+			Immediate_Evaluation_And_Join(IE, value);
+			IE.emplace(key, value);
+			//phony_str에 문자가 남아있는가? 이 경우 target만 있는 explicit rule로 취급하자
+			FlushPhonyAsRule();
+			continue;
 		}
 
 		if (str.find('=') != std::string::npos) {
@@ -96,10 +134,11 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 
 				RA->sr = SelectRule::explicit_rule;
 				RA->targets = SplitSpace(trim(safe_substr(str, 0, colon_pos)));
+				Immediate_Evaluation(IE, RA->targets);
 
 				int intTemp = (str.find(';') != std::string::npos) ? str.find(';') : str.size();
 				RA->prereq = SplitSpace(trim(safe_substr(str, colon_pos + 1, intTemp - colon_pos - 1)));
-
+				Immediate_Evaluation(IE, RA->prereq);
 			}
 			else if (SeparatorCounter(str, ':') == 2) {
 				RA->sr = SelectRule::static_pattern_rule;
@@ -117,14 +156,18 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 			// recipe가 한 줄에 같이 있을 경우
 			if (str.find(';') != std::string::npos) {
 				int semi_pos = str.find(';');
-				RA->recipes.push_back(trim(safe_substr(str, semi_pos + 1, str.size() - semi_pos - 1)));
+				std::string temp = trim(safe_substr(str, semi_pos + 1, str.size() - semi_pos - 1));
+				Immediate_Evaluation_And_Join(IE, temp);
+				RA->recipes.push_back(temp);
 				makefileText.AddRule(std::move(RA));
 				RA.reset();
 			}
 		}
 		else if (str[0] == '\t') {
 			if (RA) {
-				RA->recipes.push_back(trim(str));
+				std::string temp = trim(safe_substr(str, 1, str.size() - 1));
+				Immediate_Evaluation_And_Join(IE, temp);
+				RA->recipes.push_back(temp);
 			}
 			else if (IsPhony) {
 				makefileText.AddPhonyTarget(phony_str, trim(str));
@@ -144,5 +187,11 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 	}
 	FlushPhonyAsRule();
 
+	for (const auto& i : IE) {
+		std::cout << i.first << ": " << i.second << '\n';
+	}
+
+
 	return makefileText;
 }
+
