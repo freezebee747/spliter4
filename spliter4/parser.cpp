@@ -18,7 +18,59 @@ std::vector<std::pair<unsigned, std::string>> ReadFileWithLineNumbers(const std:
 	}
 	return lines;
 }
+//$(var)들을 각각 나눈다
+//예로 "$(var1) $(var2)" 문자열이 입력으로 들어왔다면, $(var1)과 $(var2)로 나누고 그것의 집합을 리턴한다.
+//함수의 경우 마지막 값이 입력값이다.
+std::vector<std::string> SplitValues(std::string& target) {
+	int count = 0;
+	int depth = 0;
+	std::vector<std::string> result;
+	std::vector<int> loc;
 
+	while (count < target.size()) {
+		if (target[count] == '$') {
+			count = count + 2;
+			depth++;
+			loc.push_back(count);
+		}
+		else if (target[count] == ')') {
+			//$( ) 보존
+			std::string str = target.substr(loc.back() - 2, count - loc.back() + 3);
+			result.push_back(str);
+			if (!loc.empty()) {
+				loc.pop_back();
+			}
+			count++;
+		}
+		else count++;
+	}
+	return result;
+}
+
+void Immediate_Evaluation(std::unordered_map<std::string, std::string>& ie, std::vector<std::string>& targets) {
+	for (auto& i : targets) {
+		std::vector<std::string> vect = SplitValues(i);
+		if (IsFunction_func(i)) {
+			if (!vect.empty()) {
+				vect.pop_back();
+			}
+			Immediate_Evaluation(ie, vect);
+			std::string temp = i.substr(2, i.find_first_of(" ") - 2);
+			i = Active_function(temp, vect);
+		}
+		else {
+			for (auto& j : vect) {
+				if (j.size() >= 4 && j[0] == '$' && j[1] == '(' && j.back() == ')') {
+					std::string temp = j.substr(2, j.size() - 3);
+					auto it = ie.find(temp);
+					if (it != ie.end()) {
+						i.replace(i.find(j), j.size(), it->second);
+					}
+				}
+			}
+		}
+	}
+}
 
 MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::string>>& parsing) {
 	MakefileText makefileText;
@@ -59,26 +111,15 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 			RA.reset();
 		}
 	};
-	auto Immediate_Evaluation = [](std::unordered_map<std::string, std::string>& ie, std::vector<std::string>& targets) {
-			for (auto& i : targets) {
-				if (i.size() >= 4 && i[0] == '$' && i[1] == '(' && i.back() == ')') {
-					std::string temp = i.substr(2, i.size() - 3); 
-					auto it = ie.find(temp);
-					if (it != ie.end()) {
-						i = it->second; 
-					}
-				}
-			}
-	};
+
 	auto Immediate_Evaluation_And_Join = [](std::unordered_map<std::string, std::string>& ie, std::string& s) {
 		std::vector<std::string> tokens = SplitSpace(s);
 		for (auto& token : tokens) {
 			if (token.size() >= 4 && token[0] == '$' && token[1] == '(' && token.back() == ')') {
-				std::string var = token.substr(2, token.size() - 3);
-				auto it = ie.find(var);
-				if (it != ie.end()) {
-					token = it->second;
-				}
+				std::vector<std::string> temp;
+				temp.push_back(token);
+				Immediate_Evaluation(ie, temp);
+				token = temp.front();
 			}
 		}
 		s = join(tokens, " ");
@@ -98,8 +139,10 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 			int Sep = str.find('=');
 			std::string key = trim(safe_substr(str, 0, Sep - 1));
 			std::string value = trim(safe_substr(str, Sep + 1, str.size()));
-			Immediate_Evaluation_And_Join(IE, value);
-			IE.emplace(key, value);
+			std::vector<std::string> temp;
+			temp.push_back(value);
+			Immediate_Evaluation(IE, temp);
+			IE.emplace(key, temp.front());
 			//phony_str에 문자가 남아있는가? 이 경우 target만 있는 explicit rule로 취급하자
 			FlushPhonyAsRule();
 			continue;

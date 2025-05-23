@@ -11,7 +11,8 @@
 
 inline const std::unordered_set<std::string> functions = {
 	"let", "foreach", "file", "call", "value", "eval",
-	"origin", "flaver", "shell", "guile", "patsubst"
+	"origin", "flaver", "shell", "guile", "patsubst",
+	"subst"
 };
 
 bool IsVariable_func(const std::string& str);
