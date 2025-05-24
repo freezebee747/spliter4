@@ -1,5 +1,7 @@
 #include "rule.h"
 
+
+
 // $^ Ã³¸®
 void Rule::HandleCaretToken(std::string& token, std::vector<std::unique_ptr<Prerequisite>>& preq) {
 	std::string preq_str;

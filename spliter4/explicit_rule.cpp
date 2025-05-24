@@ -9,7 +9,7 @@ Explicit_rule::Explicit_rule(RuleArg& ra) {
 void Explicit_rule::variable_expend(std::unordered_map<std::string, std::string>& variable) {
 	TargetVariableExpend(variable);
 	PrereqVariableExpend(variable);
-	RecipeVariableExpended(variable);
+	RecipeVariableExpend(variable);
 }
 //* 와일드카드의 확장은 사용자가 와일드카드에 어떤 파일이 존재하는지를 확인하기 위한 확장이지
 //  구문 분석을 위한 확장은 아님에 주의하라.
@@ -20,8 +20,9 @@ void Explicit_rule::wildcard_expend(FileManagement& fm){
 	}
 }
 
-void Explicit_rule::function_expend(){
-
+void Explicit_rule::function_expend(std::unordered_map<std::string, std::string>& variable){
+	TargetFunctionExpend(variable);
+	PrereaFunctionExpend(variable);
 }
 
 void Explicit_rule::AddTargets(const std::vector<std::string>& target) {
@@ -66,7 +67,7 @@ void Explicit_rule::PrereqVariableExpend(std::unordered_map<std::string, std::st
 }
 
 
-void Explicit_rule::RecipeVariableExpended(std::unordered_map<std::string, std::string>& variables) {
+void Explicit_rule::RecipeVariableExpend(std::unordered_map<std::string, std::string>& variables) {
 
 	for (auto& recipe : recipes) {
 		std::vector<std::string> extend = recipe->SplitRecipe();
@@ -96,6 +97,28 @@ void Explicit_rule::RecipeVariableExpended(std::unordered_map<std::string, std::
 			}
 		}
 		recipe->SetExpended(extend);
+	}
+}
+
+void Explicit_rule::TargetFunctionExpend(std::unordered_map<std::string, std::string>& variables){
+	for (const auto& i : targets) {
+		if (i->IsFunction()) {
+			std::string name = ExtractFunctionName(i->GetTarget());
+			std::vector<std::string> args = ExtractFunctionArguments(i->GetTarget());
+			std::string swaper = FunctionResult(name, args, variables);
+			i->SetExpended(swaper);
+		}
+	}
+}
+
+void Explicit_rule::PrereaFunctionExpend(std::unordered_map<std::string, std::string>& variables){
+	for (const auto& i : preqs) {
+		if (i->IsFunction()) {
+			std::string name = ExtractFunctionName(i->GetPreqs());
+			std::vector<std::string> args = ExtractFunctionArguments(i->GetPreqs());
+			std::string swaper = FunctionResult(name, args, variables);
+			i->SetExpended(swaper);
+		}
 	}
 }
 

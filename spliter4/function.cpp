@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "function.h"
 
 using FunctionHandler = std::function<std::string(const std::vector<std::string>&)>;
@@ -18,7 +19,19 @@ std::unordered_map<std::string, FunctionHandler> function_map = {
     {"findstring", [](const std::vector<std::string>& args) -> std::string {
         if (args.size() >= 2) return function_findstring(args[0], args[1]);
         return "";
+    }},
+    {"filter", [](const std::vector<std::string>& args) -> std::string {
+        if (args.size() >= 2) return function_filter(args[0], args[1]);
+        return "";
+    }},
+    {"sort", [](const std::vector<std::string>& args)-> std::string {
+         if (args.size() >= 1) return function_sort(args[0]);
+         return "";
+    }},
+    {"word",[](const std::vector<std::string>& args)->std::string {
+        if (args.size() >= 2) return function_word(args[0], args[1]);
     }}
+
     // 추가
 };
 
@@ -100,4 +113,57 @@ std::string function_findstring(const std::string& find, const std::string& in){
     return "";
 }
 
+std::string function_filter(const std::string& patterns, const std::string& text) {
+    std::vector<std::string> pattern = SplitSpace(patterns);
+    std::vector<std::string> texts = SplitSpace(text);
+    std::string result;
+    for (const auto& i : pattern) {
+        for (const auto& j : texts) {
 
+            size_t pos = i.find('%');
+            if (pos == std::string::npos) return std::string();
+
+            std::string begin = safe_substr(i, 0, pos);
+            std::string end = safe_substr(i, pos + 1, i.size() - pos - 1);
+
+            if (j.substr(0, begin.size()) == begin &&
+                j.substr(j.size() - end.size()) == end) {
+                result = result + ' ' + j;
+            }
+
+        }
+    }
+    return trim(result);
+}
+
+std::string function_sort(const std::string& list) {
+    std::string result;
+    std::vector<std::string> elems = SplitSpace(list);
+    std::sort(elems.begin(), elems.end());
+    for (const auto& elem : elems) {
+        result = result + ' ' + elem;
+    }
+    return trim(result);
+}
+
+std::string function_word(const std::string& n, const std::string& text) {
+    int num;
+    try {
+        num = std::stoi(n);
+    }
+    catch (const std::invalid_argument& e) {
+        // 숫자가 아닌 입력 처리
+        return "Invalid number format: " + n;
+    }
+    catch (const std::out_of_range& e) {
+        // 숫자가 int 범위를 넘을 경우 처리
+        return "Number out of range: " + n;
+    }
+
+    std::vector<std::string> texts = SplitSpace(text);
+    if (num < 0 || num > static_cast<int>(texts.size())) {
+        return "Index out of bounds: " + std::to_string(num);
+    }
+
+    return texts[num - 1];
+}

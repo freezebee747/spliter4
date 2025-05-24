@@ -11,7 +11,7 @@ public:
 	Static_pattern_Rule(RuleArg& ra);
 	void variable_expend(std::unordered_map<std::string, std::string>&) override;
 	void wildcard_expend(FileManagement& fm) override;
-	void function_expend() override;
+	void function_expend(std::unordered_map<std::string, std::string>& variable) override;
 
 	void AddTarget(const std::vector<std::string>& target);
 	void AddTargetPattern(const std::string& tpattern);

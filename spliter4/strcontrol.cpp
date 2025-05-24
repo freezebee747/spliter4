@@ -73,7 +73,7 @@ std::vector<std::string> SplitComma(const std::string& target) {
 	std::string item;
 
 	while (std::getline(ss, item, ',')) {
-		tokens.push_back(item);
+		tokens.push_back(trim(item));
 	}
 
 	return tokens;

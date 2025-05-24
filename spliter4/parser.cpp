@@ -46,7 +46,9 @@ std::vector<std::string> SplitValues(std::string& target) {
 	}
 	return result;
 }
-
+//즉시 확장을 위한 함수이다.
+//즉시 확장 변수가 있는지 확인하고, 있으면 바로 확장한다.
+//함수일 때랑 변수일 때랑의 차이가 존재한다.
 void Immediate_Evaluation(std::unordered_map<std::string, std::string>& ie, std::vector<std::string>& targets) {
 	for (auto& i : targets) {
 		std::vector<std::string> vect = SplitValues(i);
@@ -71,7 +73,7 @@ void Immediate_Evaluation(std::unordered_map<std::string, std::string>& ie, std:
 		}
 	}
 }
-
+//**파싱함수**
 MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::string>>& parsing) {
 	MakefileText makefileText;
 	std::unique_ptr<RuleArg> RA;
