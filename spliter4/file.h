@@ -15,6 +15,9 @@ const std::string DEFAULT_SEARCH_DIR = "/usr/local/share";
 const std::string DEFAULT_SEARCH_DIR = "./";
 #endif
 
+std::vector<std::string> SearchFilesInWorkingDirectory();
+std::string glob_to_regex(const std::string& glob);
+
 //파일 클래스 관리를 위한 observer 패턴
 class IDirObserver {
 public:

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <regex>
 #include "function.h"
 
 
@@ -103,8 +104,19 @@ std::unordered_map<std::string, FunctionHandler> function_map = {
 	{"addsuffix", [](const std::vector<std::string>& args)->std::string {
 		if (args.size() >= 2) return function_addsuffix(args[0], args[1]);
 		return "";
+	}},
+	{"addprefix",[](const std::vector<std::string>& args)->std::string {
+		if (args.size() >= 2) return function_addprefix(args[0], args[1]);
+		return "";
+	}},
+	{"join", [](const std::vector<std::string>& args)->std::string {
+		if (args.size() >= 2) return function_join(args[0], args[1]);
+		return "";
+	}},
+	{"wildcard", [](const std::vector<std::string>& args)->std::string {
+		if (args.size() >= 1) return function_basename(args[0]);
+		return "";
 	}}
-
 	// Ãß°¡
 };
 
@@ -375,6 +387,57 @@ std::string function_addsuffix(const std::string& suffix, const std::string& nam
 		temp = i + suffix;
 		result = result + " " + temp;
 	}
+	return trim(result);
+}
+
+std::string function_addprefix(const std::string& prefix, const std::string& names) {
+	if (prefix.back() != '/') return "";
+
+	std::vector<std::string> name = SplitSpace(names);
+	std::string result;
+	std::string temp;
+	for (const auto& i : name) {
+		temp = prefix + i;
+		result = result + " " + temp;
+	}
+	return trim(result);
+
+}
+
+std::string function_join(const std::string& list1, const std::string& list2) {
+	std::vector<std::string> first_list = SplitSpace(list1);
+	std::vector<std::string> second_list = SplitSpace(list2);
+	int round = (first_list.size() > second_list.size())? second_list.size() : first_list.size();
+	std::string result;
+	for (int i = 0; i < round; i++) {
+		result = result + " " + first_list[i] + second_list[i];
+	}
+	if (first_list.size() > second_list.size()) {
+		for (int i = round; i < first_list.size(); i++) {
+			result = result + " " + first_list[i];
+		}
+	}
+	else if (first_list.size() < second_list.size()) {
+		for (int i = round; i < second_list.size(); i++) {
+			result = result + " " + second_list[i];
+		}
+	}
+	return trim(result);
+}
+
+std::string function_wildcard(const std::string& pattern) {
+	std::vector<std::string> filenames = SearchFilesInWorkingDirectory();
+	std::vector<std::string> patterns = SplitSpace(pattern);
+	std::string result;
+	for (const auto &ptn : patterns) {
+		std::regex rx(glob_to_regex(ptn));
+		for (const auto &files : filenames) {
+			if (std::regex_match(files, rx)) {
+				result = result + " " + files;
+			}
+		}
+	}
+	
 	return trim(result);
 }
 

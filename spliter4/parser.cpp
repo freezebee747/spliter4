@@ -150,7 +150,7 @@ MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::str
 			continue;
 		}
 
-		if (str.find('=') != std::string::npos) {
+		if (str.find('=') != std::string::npos && !RA) {
 			int Sep = str.find('=');
 			std::string key = trim(safe_substr(str, 0, Sep - 1));
 			std::string value = trim(safe_substr(str, Sep + 1, str.size()));

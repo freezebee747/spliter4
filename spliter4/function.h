@@ -27,3 +27,6 @@ std::string function_notdir(const std::string& names);
 std::string function_suffix(const std::string& names);
 std::string function_basename(const std::string& names);
 std::string function_addsuffix(const std::string& suffix, const std::string& names);
+std::string function_addprefix(const std::string& prefix, const std::string& names);
+std::string function_join(const std::string& list1, const std::string& list2);
+std::string function_wildcard(const std::string& pattern);

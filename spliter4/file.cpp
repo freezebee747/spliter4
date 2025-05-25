@@ -29,7 +29,6 @@ void DirSingleton::NotifyObserver(){
 	}
 }
 
-
 FileManagement::FileManagement(){
 	DirSingleton::GetInstance().AttachObserver(this);
 }
@@ -99,4 +98,41 @@ bool FileManagement::IsExistFile(std::string filename){
 	}
 
 	return false;
+}
+
+std::vector<std::string> SearchFilesInWorkingDirectory(){
+	std::filesystem::path p = DirSingleton::GetInstance().Getdir();
+	std::vector<std::string> filenames;
+	if (!std::filesystem::exists(p) || !std::filesystem::is_directory(p)) {
+		std::cerr << "유효하지 않은 디렉터리입니다.\n";
+		return std::vector<std::string>();
+	}
+
+	for (const auto& entry : std::filesystem::directory_iterator(p)) {
+		if (std::filesystem::is_regular_file(entry.status())) {
+			filenames.push_back(entry.path().filename().string());
+		}
+	}
+	return filenames;
+}
+
+std::string glob_to_regex(const std::string& glob) {
+	std::string regex = "^";
+	for (size_t i = 0; i < glob.size(); ++i) {
+		char c = glob[i];
+		switch (c) {
+		case '*': regex += ".*"; break;
+		case '?': regex += "."; break;
+		case '.': regex += "\\."; break;
+		case '\\': regex += "\\\\"; break;
+		case '[': regex += "["; break;
+		case ']': regex += "]"; break;
+		default:
+			if (std::ispunct(c) && c != '[' && c != ']')
+				regex += '\\'; // escape regex special chars
+			regex += c;
+		}
+	}
+	regex += "$";
+	return regex;
 }

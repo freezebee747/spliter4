@@ -49,9 +49,6 @@ int calc_space(const std::string& str, char token, int pos) {
 }
 
 std::string safe_substr(const std::string& str, size_t pos, size_t count) {
-	if (pos == count) {
-		return "";  // 두 매개변수가 같으면 빈 문자열 반환
-	}
 	if (pos >= str.size()) {
 		return "";  // pos가 범위를 벗어나면 빈 문자열
 	}
