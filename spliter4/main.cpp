@@ -6,4 +6,6 @@ int main(){
 	//
 	//mk.Expend();
 	//mk.print();
+	std::cout << function_addsuffix(".c","foo bar");
+	
 }
