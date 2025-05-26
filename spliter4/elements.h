@@ -15,7 +15,8 @@ inline const std::unordered_set<std::string> functions = {
 	"origin", "flaver", "shell", "guile", "patsubst",
 	"subst", "filter", "sort", "word", "wordlist", "words",
 	"firstword", "lastword", "dir", "notdir", "suffix",
-	"basename", "addsuffix", "addprefix", "join", "wildcard"
+	"basename", "addsuffix", "addprefix", "join", "wildcard", 
+	"if"
 };
 
 bool IsVariable_func(const std::string& str);

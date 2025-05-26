@@ -1,7 +1,8 @@
 #include <algorithm>
 #include <regex>
-#include "function.h"
 
+#include "function.h"
+#include "MakefileText.h"
 
 std::string ExtractFunctionName(const std::string& function) {
 	std::string result = "";
@@ -16,6 +17,11 @@ std::vector<std::string> ExtractFunctionArguments(const std::string& function) {
 	if (IsFunction_func(function)) {
 		std::string args = safe_substr(function, function.find(" ") + 1, function.size() - function.find(" ") - 2);
 		result = SplitComma(args);
+		std::string filename = ExtractFunctionName(function);
+		if (filename == "let" && filename == "file") {
+			std::vector<std::string> result2 = SplitSpace(result[0]);
+			result.insert(result.begin(), result2.begin(), result2.end());
+		}
 	}
 	return result;
 }
@@ -116,6 +122,16 @@ std::unordered_map<std::string, FunctionHandler> function_map = {
 	{"wildcard", [](const std::vector<std::string>& args)->std::string {
 		if (args.size() >= 1) return function_basename(args[0]);
 		return "";
+	}},
+	{"if", [](const std::vector<std::string>& args)->std::string {
+		if (args.size() == 2) return function_if(args[0], args[1]);
+		else if (args.size() > 2) return function_if(args[0], args[1], args[2]);
+
+		return "";
+	}},
+	{"or", [](const std::vector<std::string>& args)->std::string {
+		if (args.size() <= 0) return "";
+		else return function_or(args);
 	}}
 	// 추가
 };
@@ -440,4 +456,75 @@ std::string function_wildcard(const std::string& pattern) {
 	
 	return trim(result);
 }
+
+std::string function_if(const std::string& condition, const std::string& then) {
+	std::unordered_map<std::string, std::string> var = MakefileText::GetVariables();
+	auto i = var.find(condition);
+	if (i != var.end()) {
+		std::string temp = then;
+		if (IsFunction_func(temp)) {
+			std::string function_name = ExtractFunctionName(temp);
+			std::vector<std::string> function_arg = ExtractFunctionArguments(temp);
+			return Active_function(function_name, function_arg);
+		}
+		else if (IsVariable_func(temp)) {
+			return var.find(temp)->second;
+		}
+		else {
+			return then;
+		}
+	}
+	else return "";
+}
+
+std::string function_if(const std::string& condition, const std::string& then, const std::string& _else) {
+	std::unordered_map<std::string, std::string> var = MakefileText::GetVariables();
+	auto i = var.find(condition);
+	if (i != var.end()) {
+		std::string temp = then;
+		if (IsFunction_func(temp)) {
+			std::string function_name = ExtractFunctionName(temp);
+			std::vector<std::string> function_arg = ExtractFunctionArguments(temp);
+			return Active_function(function_name, function_arg);
+		}
+		else if (IsVariable_func(temp)) {
+			return var.find(temp)->second;
+		}
+		else {
+			return then;
+		}
+	}
+	else {
+		std::string temp = _else;
+		if (IsFunction_func(temp)) {
+			std::string function_name = ExtractFunctionName(temp);
+			std::vector<std::string> function_arg = ExtractFunctionArguments(temp);
+			return Active_function(function_name, function_arg);
+		}
+		else if (IsVariable_func(temp)) {
+			return var.find(temp)->second;
+		}
+		else {
+				return _else;
+		}
+	}
+}
+
+std::string function_or(const std::vector<std::string>& conditions) {
+	std::unordered_map<std::string, std::string> var = MakefileText::GetVariables();
+	for (const auto& i : conditions) {
+		auto finder = var.find(i);
+		if (finder != var.end() && finder->second != "") {
+			return finder->second;
+		}
+	}
+	return "";
+}
+
+//나중에 정의
+//$(and condition1[,condition2[,condition3…]])
+//std::string function_and(const std::vector<std::string>& conditions)
+// 
+//$(intcmp lhs,rhs[,lt-part[,eq-part[,gt-part]]])
+//std::string function_intcmp
 

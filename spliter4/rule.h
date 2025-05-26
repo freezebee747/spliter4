@@ -4,7 +4,7 @@
 #include <memory> 
 #include <unordered_map>
 
-#include "elements.h"  
+#include "elements.h"
 #include "function.h"
 
 enum class SelectRule {

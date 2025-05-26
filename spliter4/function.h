@@ -30,3 +30,6 @@ std::string function_addsuffix(const std::string& suffix, const std::string& nam
 std::string function_addprefix(const std::string& prefix, const std::string& names);
 std::string function_join(const std::string& list1, const std::string& list2);
 std::string function_wildcard(const std::string& pattern);
+std::string function_if(const std::string& condition, const std::string& then);
+std::string function_if(const std::string& condition, const std::string& then, const std::string& _else);
+std::string function_or(const std::vector<std::string>& conditions);

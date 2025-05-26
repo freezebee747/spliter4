@@ -73,7 +73,9 @@ void Immediate_Evaluation(std::unordered_map<std::string, std::string>& ie, std:
 		}
 	}
 }
+
 //**파싱함수**
+//이 함수 대대적인 수술이 팔요할 것으로 보이는데...
 MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::string>>& parsing) {
 	MakefileText makefileText;
 	std::unique_ptr<RuleArg> RA;
