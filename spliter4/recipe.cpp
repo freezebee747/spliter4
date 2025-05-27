@@ -21,5 +21,5 @@ void Recipe::SetExpended(const std::string& exp) {
 
 void Recipe::print() {
 	std::cout << recipe << std::endl;
-	std::cout << "expend: " << expended << '\n';
+	//std::cout << "expend: " << expended << '\n';
 }
