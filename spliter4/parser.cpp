@@ -46,203 +46,8 @@ std::vector<std::string> SplitValues(std::string& target) {
 	}
 	return result;
 }
-//즉시 확장을 위한 함수이다.
-//즉시 확장 변수가 있는지 확인하고, 있으면 바로 확장한다.
-//함수일 때랑 변수일 때랑의 차이가 존재한다.
-void Immediate_Evaluation(std::unordered_map<std::string, std::string>& ie, std::vector<std::string>& targets) {
-	for (auto& i : targets) {
-		std::vector<std::string> vect = SplitValues(i);
-		if (IsFunction_func(i)) {
-			if (!vect.empty()) {
-				vect.pop_back();
-			}
-			Immediate_Evaluation(ie, vect);
-			std::string temp = i.substr(2, i.find_first_of(" ") - 2);
-			i = Active_function(temp, vect);
-		}
-		else {
-			for (auto& j : vect) {
-				if (j.size() >= 4 && j[0] == '$' && j[1] == '(' && j.back() == ')') {
-					std::string temp = j.substr(2, j.size() - 3);
-					auto it = ie.find(temp);
-					if (it != ie.end()) {
-						i.replace(i.find(j), j.size(), it->second);
-					}
-				}
-			}
-		}
-	}
-}
-
-//**파싱함수**
-//이 함수 대대적인 수술이 팔요할 것으로 보이는데...
-MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::string>>& parsing) {
-	MakefileText makefileText;
-	std::unique_ptr<RuleArg> RA;
-	std::string phony_str;
-	std::unordered_map<std::string, std::string> IE;//즉시 평가를 위한 변수
-	bool IsLong = false;
-	bool IsPhony = false;
-
-	//백슬래시 처리를 위한 전처리기
-	std::vector<std::pair<unsigned, std::string>> combinedLines;
-	for (size_t i = 0; i < parsing.size(); ++i) {
-		const auto& [lineNum, lineText] = parsing[i];
-		std::string combined = lineText;
-		unsigned originalLine = lineNum;
-
-		while (!combined.empty() && combined.back() == '\\') {
-			combined.pop_back();
-			if (++i < parsing.size()) {
-				combined += trim(parsing[i].second);
-			}
-			else {
-				break;
-			}
-		}
-
-		combinedLines.emplace_back(originalLine, combined);
-	}
-
-	auto FlushPhonyAsRule = [&]() {
-		if (!phony_str.empty()) {
-			RA = std::make_unique<RuleArg>();
-			RA->sr = SelectRule::explicit_rule;
-			RA->targets.push_back(phony_str);
-			makefileText.AddRule(std::move(RA));
-			phony_str.clear();
-			IsPhony = false;
-			RA.reset();
-		}
-	};
-
-	auto Immediate_Evaluation_And_Join = [](std::unordered_map<std::string, std::string>& ie, std::string& s) {
-		std::vector<std::string> tokens = SplitSpace(s);
-		for (auto& token : tokens) {
-			if (token.size() >= 4 && token[0] == '$' && token[1] == '(' && token.back() == ')') {
-				std::vector<std::string> temp;
-				temp.push_back(token);
-				Immediate_Evaluation(ie, temp);
-				token = temp.front();
-			}
-		}
-		s = join(tokens, " ");
-	};
 
 
-	for (const auto& [line, str] : combinedLines) {
-		if (str.empty()) continue;
-
-		// 새로운 rule 시작 전에 이전 rule 처리
-		if (str[0] != '\t' && RA) {
-			makefileText.AddRule(std::move(RA));
-			RA.reset(); // 안전하게 해제
-		}
-
-		if (str.find(":=") != std::string::npos) {
-			int Sep = str.find('=');
-			std::string key = trim(safe_substr(str, 0, Sep - 1));
-			std::string value = trim(safe_substr(str, Sep + 1, str.size()));
-			std::vector<std::string> temp;
-			temp.push_back(value);
-			Immediate_Evaluation(IE, temp);
-			IE.emplace(key, temp.front());
-			//phony_str에 문자가 남아있는가? 이 경우 target만 있는 explicit rule로 취급하자
-			FlushPhonyAsRule();
-			continue;
-		}
-
-		if (str.find('=') != std::string::npos && !RA) {
-			int Sep = str.find('=');
-			std::string key = trim(safe_substr(str, 0, Sep - 1));
-			std::string value = trim(safe_substr(str, Sep + 1, str.size()));
-			makefileText.AddVariable(key, value);
-			//phony_str에 문자가 남아있는가? 이 경우 target만 있는 explicit rule로 취급하자
-			FlushPhonyAsRule();
-			continue;
-		}
-
-		if (str.find(':') != std::string::npos) {
-
-			//phony_str에 문자가 남아있는가? 이 경우 target만 있는 explicit rule로 취급하자
-			FlushPhonyAsRule();
-			//콜론 이후에 문자열이 없는가?
-			if (trim(safe_substr(str, str.find(':') + 1, str.size())) == "") {
-				//phony_target 처리
-				IsPhony = true;
-				phony_str = trim(safe_substr(str, 0, str.find(':')));
-				continue;
-			}
-
-			RA = std::make_unique<RuleArg>();
-
-			if (SeparatorCounter(str, ':') == 1) {
-				int colon_pos = str.find(':');
-
-				RA->sr = SelectRule::explicit_rule;
-				RA->targets = SplitSpace(trim(safe_substr(str, 0, colon_pos)));
-				Immediate_Evaluation(IE, RA->targets);
-
-				int intTemp = (str.find(';') != std::string::npos) ? str.find(';') : str.size();
-				RA->prereq = SplitSpace(trim(safe_substr(str, colon_pos + 1, intTemp - colon_pos - 1)));
-				Immediate_Evaluation(IE, RA->prereq);
-			}
-			else if (SeparatorCounter(str, ':') == 2) {
-				RA->sr = SelectRule::static_pattern_rule;
-				int colon_pos = str.find(':');
-				RA->targets = SplitSpace(trim(safe_substr(str, 0, colon_pos)));
-				int next_colon = str.find(':', colon_pos + 1);
-				RA->target_pattern = trim(safe_substr(str, colon_pos + 1, next_colon - colon_pos - 1));
-				RA->prereq_pattern = trim(safe_substr(str, next_colon + 1, str.size() - next_colon - 1));
-			}
-			else {
-				std::cout << "error line: " << line << std::endl;
-				exit(1);
-			}
-
-			// recipe가 한 줄에 같이 있을 경우
-			if (str.find(';') != std::string::npos) {
-				int semi_pos = str.find(';');
-				std::string temp = trim(safe_substr(str, semi_pos + 1, str.size() - semi_pos - 1));
-				Immediate_Evaluation_And_Join(IE, temp);
-				RA->recipes.push_back(temp);
-				makefileText.AddRule(std::move(RA));
-				RA.reset();
-			}
-		}
-		else if (str[0] == '\t') {
-			if (RA) {
-				std::string temp = trim(safe_substr(str, 1, str.size() - 1));
-				Immediate_Evaluation_And_Join(IE, temp);
-				RA->recipes.push_back(temp);
-			}
-			else if (IsPhony) {
-				makefileText.AddPhonyTarget(phony_str, trim(str));
-				phony_str.clear();
-				IsPhony = false;
-			}
-			else {
-				throw std::runtime_error("Recipe without rule at line: " + std::to_string(line));
-			}
-		}
-	}
-
-	// 마지막 rule 처리
-	if (RA) {
-		makefileText.AddRule(std::move(RA));
-		RA.reset();
-	}
-	FlushPhonyAsRule();
-
-	for (const auto& i : IE) {
-		std::cout << i.first << ": " << i.second << '\n';
-	}
-
-
-	return makefileText;
-}
-//////////////////////////////////////////////////////////////////////////////
-// 새로운 파서!!
 // 문서를 블록단위로 나눈다.
 std::vector<Block> SplitByBlock(std::vector<std::pair<unsigned, std::string>>& parsing) {
 	std::vector<Block> blocks;
@@ -284,7 +89,7 @@ std::vector<Block> SplitByBlock(std::vector<std::pair<unsigned, std::string>>& p
 		if (str.find("=") != std::string::npos && str[0] != '\t') {
             block = std::make_unique<Block>();
 			block->type = BlockType::variable;
-			block->variable_line = str;
+			block->var_line = { line, str };
 			blocks.push_back(*block);
 			block.reset();
 			continue;
@@ -297,10 +102,10 @@ std::vector<Block> SplitByBlock(std::vector<std::pair<unsigned, std::string>>& p
 		if (str.find(":") != std::string::npos && str[0] != '\t') {
 			block = std::make_unique<Block>();
 			block->type = BlockType::rule;
-			block->lines.push_back(str);
+			block->_lines.push_back({ line, str });
 		}
 		if (block && str[0] == '\t') {
-			block->lines.push_back(str);
+			block->_lines.push_back({line, str });
 			//만일 다음 라인이(빈 라인은 첫번째 조건문에서 버려진다.) 탭으로 시작하지 않는다면 block를 저장한 후 클리어한다.
 			auto next_it = std::next(it);
 			if (next_it != combinedLines.end() && next_it->second[0] != '\t') {
@@ -319,7 +124,7 @@ std::vector<Block> SplitByBlock(std::vector<std::pair<unsigned, std::string>>& p
 	return blocks;
 }
 
-void Immediate_Evaluation_two(std::vector<std::string>& targets) {
+void Immediate_Evaluation(std::vector<std::string>& targets) {
 	std::unordered_map<std::string, std::string> variables = MakefileText::GetVariables();
 	for (auto& i : targets) {
 		std::vector<std::string> vect = SplitValues(i);
@@ -327,7 +132,7 @@ void Immediate_Evaluation_two(std::vector<std::string>& targets) {
 			if (!vect.empty()) {
 				vect.pop_back();
 			}
-			Immediate_Evaluation_two(vect);
+			Immediate_Evaluation(vect);
 			std::string temp = i.substr(2, i.find_first_of(" ") - 2);
 			i = Active_function(temp, vect);
 		}
@@ -338,57 +143,107 @@ void Immediate_Evaluation_two(std::vector<std::string>& targets) {
 					auto it = variables.find(temp);
 					if (it != variables.end()) {
 						i.replace(i.find(j), j.size(), it->second);
-						//Immediate_Evaluation_two(vect);
+						IE_variable(j, variables);
 					}
 				}
 			}
 		}
 	}
 }
+//추가 변수 확장을 위한 함수
+//만일
+//CC = gcc
+//TEST := $(CC)
+//TEMP := $(TEST)
+// 일 때
+//TEMP를 $(TEST)->$(CC)->gcc 로 즉시 확장하도록 하기 위한 함수이다.
+//
+void IE_variable(std::string& value, std::unordered_map<std::string, std::string>& variables) {
+	if (value.size() >= 4 && value[0] == '$' && value[1] == '(' && value.back() == ')') {
+		std::string temp = value.substr(2, value.size() - 3);
+		auto it = variables.find(temp);
+		if (it != variables.end()) {
+			value = temp;
+			IE_variable(value, variables);
+		}
+	}
+}
 
-MakefileText ParseMakefileTextFromLines_redefine(std::vector<Block>& blocks) {
+//새로운 파서!!
+//그낭 파서를 클래스로 바꾸는 것에 대해 진지한 고민 필요
+MakefileText ParseMakefileTextFromLines(std::vector<Block>& blocks) {
 	MakefileText makefileText;
 	std::unique_ptr<RuleArg> RA;
 
 	for (const auto& block : blocks) {
 		if (block.type == BlockType::variable) {
-			if (block.variable_line.find(":=") != std::string::npos) {
-				int Sep = block.variable_line.find('=');
-				std::string key = trim(safe_substr(block.variable_line, 0, Sep - 1));
-				std::string value = trim(safe_substr(block.variable_line, Sep + 1, block.variable_line.size()));
+			if (block.var_line.second.find(":=") != std::string::npos) {
+				int Sep = block.var_line.second.find('=');
+				std::string key = trim(safe_substr(block.var_line.second, 0, Sep - 1));
+				//변수 이름 검사
+				std::string value = trim(safe_substr(block.var_line.second, Sep + 1, block.var_line.second.size()));
 				std::vector<std::string> temp;
 				temp.push_back(value);
-				Immediate_Evaluation_two(temp);
+				Immediate_Evaluation(temp);
 				value = temp[0];
+				//변수 중복 검사
+				//변수 순환 검사
 				makefileText.AddVariable(key, value);
 			}
 			else {
-				int Sep = block.variable_line.find('=');
-				std::string key = trim(safe_substr(block.variable_line, 0, Sep - 1));
-				std::string value = trim(safe_substr(block.variable_line, Sep + 1, block.variable_line.size()));
+				int Sep = block.var_line.second.find('=');
+				std::string key = trim(safe_substr(block.var_line.second, 0, Sep - 1));
+				//변수 이름 검사
+				std::string value = trim(safe_substr(block.var_line.second, Sep + 1, block.var_line.second.size()));
+				std::pair raw(key, value);
+				makefileText.GetRawVariable().push_back(raw);
+				//변수 중복 검사
+				
+				//변수 순환 검사
+
 				makefileText.AddVariable(key, value);
 			}
 		}
 
 		else if (block.type == BlockType::rule) {
 			RA = std::make_unique<RuleArg>();
-			std::string first_line = block.lines[0];
+			std::string first_line = block._lines[0].second;
 			if (SeparatorCounter(first_line, ':') == 1) {
-				int colon_pos = first_line.find(':');
+				size_t colon_pos = first_line.find(':');
 
-				RA->sr = SelectRule::explicit_rule;
-				RA->targets = SplitSpace(trim(safe_substr(first_line, 0, colon_pos)));
-				Immediate_Evaluation_two(RA->targets);
 
-				int intTemp = (first_line.find(';') != std::string::npos) ? first_line.find(';') : first_line.size();
-				RA->prereq = SplitSpace(trim(safe_substr(first_line, colon_pos + 1, intTemp - colon_pos - 1)));
-				Immediate_Evaluation_two(RA->prereq);
+				if (trim(safe_substr(first_line, colon_pos + 1, first_line.size() - colon_pos - 1)) == "") {
+					std::string phony_name = trim(safe_substr(first_line, 0, colon_pos));
+					std::vector<std::string> phony_recipe;
+					for (size_t i = 1; i < block._lines.size(); i++) {
+						phony_recipe.push_back(trim(block._lines[i].second));
+					}
+					makefileText.AddPhonyTarget(phony_name, phony_recipe);
+					RA.reset();
+					continue;
+				}
+				else {
+					RA->sr = SelectRule::explicit_rule;
+					RA->targets = SplitSpace(trim(safe_substr(first_line, 0, colon_pos)));
+					Immediate_Evaluation(RA->targets);
+
+					size_t intTemp = (first_line.find(';') != std::string::npos) ? first_line.find(';') : first_line.size();
+					RA->prereq = SplitSpace(trim(safe_substr(first_line, colon_pos + 1, intTemp - colon_pos - 1)));
+					Immediate_Evaluation(RA->prereq);
+
+					if (first_line.find(';') != std::string::npos) {
+						std::string rec = safe_substr(first_line, intTemp, first_line.size() - intTemp);
+						if (rec != "") {
+							RA->recipes.push_back(rec);
+						}
+					}
+				}
 			}
 			else if (SeparatorCounter(first_line, ':') == 2) {
 				RA->sr = SelectRule::static_pattern_rule;
 				int colon_pos = first_line.find(':');
 				RA->targets = SplitSpace(trim(safe_substr(first_line, 0, colon_pos)));
-				Immediate_Evaluation_two(RA->targets);
+				Immediate_Evaluation(RA->targets);
 
 				int next_colon = first_line.find(':', colon_pos + 1);
 				RA->target_pattern = trim(safe_substr(first_line, colon_pos + 1, next_colon - colon_pos - 1));
@@ -401,8 +256,8 @@ MakefileText ParseMakefileTextFromLines_redefine(std::vector<Block>& blocks) {
 				RA->recipes.push_back(temp);
 			}
 
-			for (size_t i = 1; i < block.lines.size(); i++) {
-				RA->recipes.push_back(trim(block.lines[i]));
+			for (size_t i = 1; i < block._lines.size(); i++) {
+				RA->recipes.push_back(trim(block._lines[i].second));
 			}
 			makefileText.AddRule(std::move(RA));
 			RA.reset();
@@ -410,4 +265,21 @@ MakefileText ParseMakefileTextFromLines_redefine(std::vector<Block>& blocks) {
 	}
 
 	return makefileText;
+}
+
+std::vector<std::string>ExpendPatternRule(const std::string& pattern, const std::unordered_set<std::string>& filenames) {
+	if (SeparatorCounter(pattern, '%') != 1) {
+		return std::vector<std::string>();
+	}
+	size_t sep = pattern.find("%");
+	std::string prefix = safe_substr(pattern, 0, sep);
+	std::string suffix = pattern.substr(sep + 1, pattern.size() - sep);
+	std::vector<std::string> result;
+
+	for (const auto& i : filenames) {
+		if (i.substr(0, prefix.size()) == prefix && i.substr(i.size() - suffix.size(), suffix.size()) == suffix) {
+			result.push_back(i);
+		}
+	}
+	return result;
 }

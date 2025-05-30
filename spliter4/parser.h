@@ -5,13 +5,14 @@
 enum class BlockType { variable, rule , none};
 struct Block {
 	BlockType type;
-	std::string variable_line;
-	std::vector<std::string> lines;
+	std::pair<int, std::string> var_line;
+	std::vector<std::pair<int, std::string>> _lines;
 };
 
 std::vector<std::pair<unsigned, std::string>> ReadFileWithLineNumbers(const std::string& filename);
-void Immediate_Evaluation(std::unordered_map<std::string, std::string>& ie, std::vector<std::string>& targets);
-MakefileText ParseMakefileTextFromLines(std::vector<std::pair<unsigned, std::string>>& parsing);
+MakefileText ParseMakefileTextFromLines(std::vector<Block>& blocks);
+std::vector<std::string> ExpendPatternRule(const std::string& pattern, const std::unordered_set<std::string>& filenames);
 std::vector<Block> SplitByBlock(std::vector<std::pair<unsigned, std::string>>& parsing);
-MakefileText ParseMakefileTextFromLines_redefine(std::vector<Block>& blocks);
+void Immediate_Evaluation(std::vector<std::string>& targets);
+void IE_variable(std::string& value, std::unordered_map<std::string, std::string>& variables);
 std::vector<std::string> SplitValues(std::string& target);

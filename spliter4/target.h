@@ -1,6 +1,6 @@
 #pragma once
 #include "elements.h"
-
+#include <unordered_set>
 class Target {
 private:
 	std::string target;
@@ -9,10 +9,6 @@ private:
 public:
 	Target(const std::string& t) :target(t) {};
 	std::string GetTarget();
+	void pattern_expend(std::unordered_set<std::string>& filenames);
 	void print();
-	bool IsVariable();
-	bool IsFunction();
-	void SetWildcard(std::vector<std::string>& wildcard);
-	std::string GetVariable();
-	void SetExpended(const std::string& exp);
 };

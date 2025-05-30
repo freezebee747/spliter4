@@ -1,5 +1,6 @@
 #pragma once
 #include "elements.h"
+#include <unordered_set>
 
 class Prerequisite {
 private:
@@ -8,10 +9,6 @@ private:
 public:
 	Prerequisite(const std::string& p) : preqs(p) {};
 	void print();
+	void pattern_expend(std::unordered_set<std::string>& filenames);
 	std::string GetPreqs();
-	bool IsVariable();
-	bool IsFunction();
-	std::string GetVariable();
-	void SetExpended(const std::string& exp);
-
 };

@@ -49,6 +49,9 @@ int calc_space(const std::string& str, char token, int pos) {
 }
 
 std::string safe_substr(const std::string& str, size_t pos, size_t count) {
+	if (pos == 0 && count == 0) {
+		return "";
+	}
 	if (pos >= str.size()) {
 		return "";  // pos가 범위를 벗어나면 빈 문자열
 	}

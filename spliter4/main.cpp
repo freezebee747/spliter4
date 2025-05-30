@@ -3,8 +3,7 @@
 int main(){
 	std::vector<std::pair<unsigned, std::string>> test = ReadFileWithLineNumbers("test.txt");
 	std::vector<Block> blocks= SplitByBlock(test);
-	MakefileText mk = ParseMakefileTextFromLines_redefine(blocks);
+	MakefileText mk = ParseMakefileTextFromLines(blocks);
 	mk.print();
 
-	
 }

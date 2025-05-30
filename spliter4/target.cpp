@@ -1,4 +1,5 @@
 #include "target.h"
+#include "parser.h"
 
 void Target::print() {
 	std::cout << target << std::endl;
@@ -7,27 +8,11 @@ void Target::print() {
 std::string Target::GetTarget() { 
 	return target; 
 }
-
-bool Target::IsVariable() {
-	return IsVariable_func(target);
-}
-
-bool Target::IsFunction(){
-	return IsFunction_func(target);
-}
-
-void Target::SetWildcard(std::vector<std::string>& wildcard){
-	wildcard_files = wildcard;
-}
-
-std::string Target::GetVariable() {
-	if (IsVariable()) {
-		return target.substr(2, target.size() - 3);
+//지연 확장
+void Target::pattern_expend(std::unordered_set<std::string>& filenames){
+	std::vector<std::string> temp = ExpendPatternRule(target, filenames);
+	for (const auto& i : temp) {
+		expended = expended + " " + i;
 	}
-	else return "";
-
-}
-
-void Target::SetExpended(const std::string& exp) {
-	expended = exp;
+	expended = trim(expended);
 }
